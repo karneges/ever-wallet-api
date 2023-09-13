@@ -59,7 +59,7 @@ async fn check_api_key(
         Some(key) => key,
         None => anyhow::bail!("Api key doesn't provided")
     };
-    let Key {service_id, ..} = auth_service.get_key(api_key.to_str().unwrap());
+    let Key {service_id, ..} = auth_service.get_key(api_key.to_str().unwrap()).await?;
     // Forward service id to request handler
     parts.extensions_mut().insert(IdExtractor(service_id));
 
