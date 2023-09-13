@@ -155,6 +155,8 @@ impl EngineContext {
 
         tokio::spawn(async move {
             while let Some((transaction, state)) = rx.recv().await {
+                println!("{:?}", transaction);
+
                 let engine_context = match engine_context.upgrade() {
                     Some(engine_context) => engine_context,
                     None => {
@@ -162,7 +164,6 @@ impl EngineContext {
                         return;
                     }
                 };
-                println!("{:?}", transaction);
                 match transaction {
                     CaughtTonTransaction::Create(transaction) => {
                         let message_hash = transaction.message_hash.clone();
