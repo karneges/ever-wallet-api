@@ -49,7 +49,7 @@ pub async fn post_add_account_subscription(
 ) -> Result<Json<CheckedAddressResponse>> {
     let address = ctx
         .ton_service
-        .check_address(req.address)
+        .check_address(req.address.clone())
         .await
         .map(AddressValidResponse::new);
     ctx.ton_service.ton_api_client.add_ton_account_subscription(UInt256::from_be_bytes(&hex::decode(req.address.0.to_string())?));
