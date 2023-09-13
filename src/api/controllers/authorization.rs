@@ -30,36 +30,16 @@ async fn check_api_key(
     auth_service: Arc<AuthService>,
 ) -> anyhow::Result<Request<Body>> {
     let api_key_opt = req.headers().get("api-key");
-    let timestamp_opt = req.headers().get("timestamp");
-    let signature_opt = req.headers().get("sign");
-
-    // let (api_key, timestamp, signature) = match (api_key_opt, timestamp_opt, signature_opt) {
-    //     (Some(api_key), Some(timestamp), Some(signature)) => (
-    //         api_key
-    //             .to_str()
-    //             .map(|x| x.to_string())
-    //             .map_err(|_| anyhow::Error::msg("Failed to read API-KEY header"))?,
-    //         timestamp
-    //             .to_str()
-    //             .map(|x| x.to_string())
-    //             .map_err(|_| anyhow::Error::msg("Failed to read timestamp header"))?,
-    //         signature
-    //             .to_str()
-    //             .map(|x| x.to_string())
-    //             .map_err(|_| anyhow::Error::msg("Failed to read signature header"))?,
-    //     ),
-    //     _ => anyhow::bail!("One or more auth headers are missing"),
-    // };
 
     let api_key =  match &api_key_opt {
         Some(key) => key.clone(),
         None => anyhow::bail!("Api key doesn't provided")
     }.to_str().unwrap();
-
+    let Key {service_id, ..} = auth_service.get_key(api_key).await?;
     let mut parts = RequestParts::new(req);
 
 
-    let Key {service_id, ..} = auth_service.get_key(api_key).await?;
+
     // Forward service id to request handler
     parts.extensions_mut().insert(IdExtractor(service_id));
 
