@@ -54,12 +54,12 @@ async fn check_api_key(
     let api_key =  match &api_key_opt {
         Some(key) => key.clone(),
         None => anyhow::bail!("Api key doesn't provided")
-    };
+    }.to_str().unwrap();
 
     let mut parts = RequestParts::new(req);
 
 
-    let Key {service_id, ..} = auth_service.get_key(api_key.to_str().unwrap()).await?;
+    let Key {service_id, ..} = auth_service.get_key(api_key).await?;
     // Forward service id to request handler
     parts.extensions_mut().insert(IdExtractor(service_id));
 
