@@ -162,7 +162,7 @@ impl EngineContext {
                         return;
                     }
                 };
-
+                println!("{:?}", transaction);
                 match transaction {
                     CaughtTonTransaction::Create(transaction) => {
                         let message_hash = transaction.message_hash.clone();
