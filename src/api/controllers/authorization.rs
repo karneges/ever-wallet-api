@@ -52,7 +52,7 @@ async fn check_api_key(
     // };
 
     let api_key =  match &api_key_opt {
-        Some(key) => key,
+        Some(key) => key.clone(),
         None => anyhow::bail!("Api key doesn't provided")
     };
 
