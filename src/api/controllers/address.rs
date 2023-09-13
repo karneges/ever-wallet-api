@@ -1,8 +1,10 @@
+use std::str::FromStr;
 use axum::extract::Path;
 use axum::{Extension, Json};
 use tokio::time::Instant;
 
 use metrics::{histogram, increment_counter};
+use ton_block::{GetRepresentationHash, MsgAddressInt};
 use ton_types::UInt256;
 
 use crate::api::controllers::*;
@@ -52,7 +54,8 @@ pub async fn post_add_account_subscription(
         .check_address(req.address.clone())
         .await
         .map(AddressValidResponse::new);
-    ctx.ton_service.ton_api_client.add_ton_account_subscription(UInt256::from_be_bytes(req.address.to_string().as_bytes()?));
+   let address_for_subscription = MsgAddressInt::from_str(&req.address.to_string())?;
+    ctx.ton_service.ton_api_client.add_ton_account_subscription(address_for_subscription.hash()?);
 
     Ok(Json(CheckedAddressResponse::from(address)))
 }
