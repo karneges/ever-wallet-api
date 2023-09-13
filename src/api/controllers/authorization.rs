@@ -51,14 +51,14 @@ async fn check_api_key(
     //     _ => anyhow::bail!("One or more auth headers are missing"),
     // };
 
-
-
-    let mut parts = RequestParts::new(req);
-
-  let api_key =  match &api_key_opt {
+    let api_key =  match &api_key_opt {
         Some(key) => key,
         None => anyhow::bail!("Api key doesn't provided")
     };
+
+    let mut parts = RequestParts::new(req);
+
+
     let Key {service_id, ..} = auth_service.get_key(api_key.to_str().unwrap()).await?;
     // Forward service id to request handler
     parts.extensions_mut().insert(IdExtractor(service_id));
