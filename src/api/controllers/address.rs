@@ -3,6 +3,7 @@ use axum::{Extension, Json};
 use tokio::time::Instant;
 
 use metrics::{histogram, increment_counter};
+use ton_types::UInt256;
 
 use crate::api::controllers::*;
 use crate::api::requests::*;
@@ -39,6 +40,19 @@ pub async fn post_address_check(
         .check_address(req.address)
         .await
         .map(AddressValidResponse::new);
+
+    Ok(Json(CheckedAddressResponse::from(address)))
+}
+pub async fn post_add_account_subscription(
+    Json(req): Json<AddressCheckRequest>,
+    Extension(ctx): Extension<Arc<ApiContext>>,
+) -> Result<Json<CheckedAddressResponse>> {
+    let address = ctx
+        .ton_service
+        .check_address(req.address)
+        .await
+        .map(AddressValidResponse::new);
+    ctx.ton_service.ton_api_client.add_ton_account_subscription(UInt256::from_be_bytes(&hex::decode(req.address.to_hex_string())?));
 
     Ok(Json(CheckedAddressResponse::from(address)))
 }

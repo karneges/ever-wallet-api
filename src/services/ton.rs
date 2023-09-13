@@ -23,7 +23,7 @@ use crate::utils::*;
 #[derive(Clone)]
 pub struct TonService {
     sqlx_client: SqlxClient,
-    ton_api_client: Arc<TonClient>,
+    pub ton_api_client: Arc<TonClient>,
     callback_client: Arc<CallbackClient>,
     key: Arc<Vec<u8>>,
 }
