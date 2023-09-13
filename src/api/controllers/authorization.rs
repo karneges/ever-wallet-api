@@ -55,7 +55,7 @@ async fn check_api_key(
 
     let mut parts = RequestParts::new(req);
 
-  let api_key =  match api_key_opt.clone() {
+  let api_key =  match &api_key_opt {
         Some(key) => key,
         None => anyhow::bail!("Api key doesn't provided")
     };
