@@ -80,7 +80,7 @@ impl AuthService {
         Ok(key.service_id)
     }
 
-    async fn get_key(&self, api_key: &str) -> anyhow::Result<Key> {
+    async pub fn get_key(&self, api_key: &str) -> anyhow::Result<Key> {
         let cached_key = {
             let lock = self.keys_hash.lock();
             lock.get(api_key).cloned()

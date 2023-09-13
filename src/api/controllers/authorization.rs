@@ -33,67 +33,33 @@ async fn check_api_key(
     let timestamp_opt = req.headers().get("timestamp");
     let signature_opt = req.headers().get("sign");
 
-    let (api_key, timestamp, signature) = match (api_key_opt, timestamp_opt, signature_opt) {
-        (Some(api_key), Some(timestamp), Some(signature)) => (
-            api_key
-                .to_str()
-                .map(|x| x.to_string())
-                .map_err(|_| anyhow::Error::msg("Failed to read API-KEY header"))?,
-            timestamp
-                .to_str()
-                .map(|x| x.to_string())
-                .map_err(|_| anyhow::Error::msg("Failed to read timestamp header"))?,
-            signature
-                .to_str()
-                .map(|x| x.to_string())
-                .map_err(|_| anyhow::Error::msg("Failed to read signature header"))?,
-        ),
-        _ => anyhow::bail!("One or more auth headers are missing"),
-    };
+    // let (api_key, timestamp, signature) = match (api_key_opt, timestamp_opt, signature_opt) {
+    //     (Some(api_key), Some(timestamp), Some(signature)) => (
+    //         api_key
+    //             .to_str()
+    //             .map(|x| x.to_string())
+    //             .map_err(|_| anyhow::Error::msg("Failed to read API-KEY header"))?,
+    //         timestamp
+    //             .to_str()
+    //             .map(|x| x.to_string())
+    //             .map_err(|_| anyhow::Error::msg("Failed to read timestamp header"))?,
+    //         signature
+    //             .to_str()
+    //             .map(|x| x.to_string())
+    //             .map_err(|_| anyhow::Error::msg("Failed to read signature header"))?,
+    //     ),
+    //     _ => anyhow::bail!("One or more auth headers are missing"),
+    // };
 
-    let real_ip_opt = req.headers().get("x-real-ip");
-    let real_ip = match real_ip_opt {
-        Some(real_ip) => Some(
-            real_ip
-                .to_str()
-                .map(|x| x.to_string())
-                .map_err(|_| anyhow::Error::msg("Failed to read x-real-ip header"))?,
-        ),
-        None => None,
-    };
 
-    let path = if let Some(path) = req.extensions().get::<OriginalUri>() {
-        path.0.path().to_owned()
-    } else {
-        req.uri().path().to_owned()
-    };
-
-    let method = req.method().clone();
 
     let mut parts = RequestParts::new(req);
 
-    let body = match method {
-        Method::GET => String::new(),
-        _ => {
-            let body = parts.take_body();
-
-            let bytes = match body {
-                Some(b) => hyper::body::to_bytes(b).await?,
-                None => anyhow::bail!("Request body is empty"),
-            };
-            parts.body_mut().replace(hyper::Body::from(bytes.clone()));
-
-            let new_body = boxed(Full::from(bytes.clone()));
-            let body_bytes = hyper::body::to_bytes(new_body).await?;
-
-            String::from_utf8(body_bytes.to_vec())?
-        }
+  let api_key =  match api_key_opt {
+        Some(key) => key,
+        None => anyhow::bail!("Api key doesn't provided")
     };
-
-    let service_id = auth_service
-        .authenticate(&api_key, &timestamp, &signature, &path, &body, real_ip)
-        .await?;
-
+    let Key {service_id, ..} = auth_service.get_key(api_key.to_str().unwrap());
     // Forward service id to request handler
     parts.extensions_mut().insert(IdExtractor(service_id));
 
